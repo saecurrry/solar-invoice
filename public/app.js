@@ -1290,6 +1290,16 @@ let parsedCSVData = null;
 let csvHeaders = [];
 
 function handleCSVFile(file) {
+  // Update drag zone UI with selected filename
+  const dragZone = document.getElementById('csv-drag-zone');
+  if (dragZone) {
+    dragZone.innerHTML = `
+      <div class="drag-icon" style="color: var(--success); font-size: 2rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-file-circle-check"></i></div>
+      <p style="font-weight: 600; margin-bottom: 0.25rem; color: var(--success);">File Selected: ${escapeHTML(file.name)}</p>
+      <p style="font-size: 0.75rem; color: var(--text-secondary);">Size: ${(file.size / 1024).toFixed(1)} KB (Click to change file)</p>
+    `;
+  }
+
   const reader = new FileReader();
   reader.onload = function(e) {
     const text = e.target.result;
@@ -1579,6 +1589,20 @@ export function closeModal(modalName) {
     } else if (modalName === 'import') {
       document.getElementById('import-mapping-container').style.display = 'none';
       document.getElementById('btn-do-import').disabled = true;
+      
+      // Reset drag-drop zone text
+      const dragZone = document.getElementById('csv-drag-zone');
+      if (dragZone) {
+        dragZone.innerHTML = `
+          <div class="drag-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+          <p style="font-weight: 600; margin-bottom: 0.25rem;">Click to browse or drag & drop CSV file</p>
+          <p style="font-size: 0.75rem; color: var(--text-muted);">Only .csv files supported</p>
+        `;
+      }
+      
+      // Reset file input element
+      const fileInput = document.getElementById('csv-file-input');
+      if (fileInput) fileInput.value = '';
     }
   }
 }
