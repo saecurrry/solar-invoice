@@ -896,6 +896,8 @@ window.copyShareUrl = () => {
 window.viewClientInvoiceLocal = (invoiceId) => {
   const inv = state.invoices.find(item => item.id === invoiceId);
   if (inv) {
+    // Admin is viewing from the console, so pre-unlock the client view
+    sessionStorage.setItem('client_unlocked_' + invoiceId, 'true');
     const payload = compressInvoiceState(inv);
     window.location.hash = `#/invoice?d=${payload}`;
   }
@@ -1306,7 +1308,8 @@ function renderClientInvoice(invoice) {
   window.activeClientInvoice = invoice;
 
   // Intercept password protection for client-facing view
-  const isUnlocked = sessionStorage.getItem('client_unlocked_' + invoice.id) === 'true';
+  const isUnlocked = (sessionStorage.getItem('client_unlocked_' + invoice.id) === 'true') || 
+                     (sessionStorage.getItem('helios_admin_unlocked') === 'true');
   const lockEl = document.getElementById('client-login-lock');
   
   if (invoice.password && !isUnlocked) {
