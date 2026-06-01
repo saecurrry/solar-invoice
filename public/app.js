@@ -34,9 +34,26 @@ document.addEventListener('DOMContentLoaded', () => {
   setupUIEventListeners();
 });
 
+function updateSidebarBranding() {
+  const settings = state.settings || DEFAULT_SETTINGS;
+  const brandTextEl = document.getElementById('sidebar-brand-text');
+  const brandSubEl = document.getElementById('sidebar-brand-sub');
+  
+  if (brandTextEl) {
+    const compName = settings.companyName || DEFAULT_SETTINGS.companyName;
+    const words = compName.toUpperCase().split(/\s+/);
+    brandTextEl.innerText = words[0] || 'HELIOS';
+  }
+  
+  if (brandSubEl) {
+    brandSubEl.innerText = settings.companyTagline || DEFAULT_SETTINGS.companyTagline || 'Solar Invoice App';
+  }
+}
+
 async function loadInitialState() {
   loadLocalStorageState();
   checkAdminLock();
+  updateSidebarBranding();
   
   // Try to load latest catalog and settings from server
   try {
@@ -62,6 +79,7 @@ async function loadInitialState() {
         localStorage.setItem('helios_settings', JSON.stringify(state.settings));
         console.log(`[Init] Successfully synchronized with backend settings.json.`);
         checkAdminLock();
+        updateSidebarBranding();
       }
     }
   } catch (err) {
@@ -414,6 +432,7 @@ window.saveSettingsForm = () => {
 
   saveSettings(updatedSettings);
   checkAdminLock();
+  updateSidebarBranding();
   alert("Settings saved successfully!");
   renderAllViews();
 };
