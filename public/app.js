@@ -1774,3 +1774,25 @@ function escapeHTML(str) {
   if (!str) return '';
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
+
+// Emergency Admin Console Password Reset Option
+window.resetAdminPassword = async () => {
+  if (confirm("Are you sure you want to reset the admin console password? This will clear password protection so you can access the dashboard immediately.")) {
+    state.settings.adminPassword = "";
+    localStorage.setItem('helios_settings', JSON.stringify(state.settings));
+    
+    // Save persistently to serversettings.json
+    await saveSettings(state.settings);
+    
+    // Hide lock screen
+    const lockEl = document.getElementById('admin-login-lock');
+    if (lockEl) lockEl.style.display = 'none';
+    
+    // Set unlocked status in session
+    sessionStorage.setItem('helios_admin_unlocked', 'true');
+    
+    alert("Admin password cleared successfully! The console is now unlocked.");
+    handleHashRoute();
+    renderAllViews();
+  }
+};

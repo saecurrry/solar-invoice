@@ -22,9 +22,15 @@
         <form onsubmit="handleAdminLoginSubmit(event)" style="width: 100%;">
           <div class="form-group" style="text-align: left; margin-bottom: 1.5rem;">
             <label for="lock-password" style="color: var(--text-secondary); margin-bottom: 0.5rem;">Password</label>
-            <input type="password" id="lock-password" placeholder="••••••••" style="width: 100%; text-align: center; font-size: 1.1rem; letter-spacing: 2px;">
+            <input type="password" id="lock-password" placeholder="••••••••" style="width: 100%; text-align: center; font-size: 1.1rem; letter-spacing: 2px;" autocomplete="current-password">
           </div>
           <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; font-size: 1rem; padding: 0.75rem;"><i class="fa-solid fa-unlock"></i> Unlock Dashboard</button>
+          
+          <div style="margin-top: 1rem; text-align: center;">
+            <button type="button" onclick="resetAdminPassword()" style="background: none; border: none; color: var(--text-muted); font-size: 0.75rem; text-decoration: underline; cursor: pointer; transition: var(--transition-fast);">
+              <i class="fa-solid fa-triangle-exclamation"></i> Emergency Password Reset
+            </button>
+          </div>
         </form>
       </div>
     </div>
@@ -479,10 +485,9 @@
                 </div>
                 <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.4;">
                   Secure access to wholesale pricing, tracking databases, and scraping settings. If empty, the app opens without authentication.
-                </div>
-                <div class="form-group">
+                        <div class="form-group">
                   <label for="settings-admin-password">Secure Admin Password</label>
-                  <input type="password" id="settings-admin-password" placeholder="Leave empty to disable password protection">
+                  <input type="password" id="settings-admin-password" placeholder="Leave empty to disable password protection" autocomplete="new-password">
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1.5rem;">
                   <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="saveSettingsForm()"><i class="fa-solid fa-circle-check"></i> Save Profile & Password</button>
@@ -507,7 +512,7 @@
           <form id="client-login-form" onsubmit="handleClientInvoiceUnlock(event)" style="width: 100%;">
             <div class="form-group" style="text-align: left; margin-bottom: 1.5rem;">
               <label for="client-lock-password" style="color: var(--text-secondary); margin-bottom: 0.5rem;">Access Password</label>
-              <input type="password" id="client-lock-password" placeholder="e.g. A1b2C3d4E5f6" style="width: 100%; text-align: center; font-size: 1.1rem; letter-spacing: 1px; font-family: monospace;">
+              <input type="password" id="client-lock-password" placeholder="e.g. A1b2C3d4E5f6" style="width: 100%; text-align: center; font-size: 1.1rem; letter-spacing: 1px; font-family: monospace;" autocomplete="new-password">
             </div>
             <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; font-size: 1rem; padding: 0.75rem;"><i class="fa-solid fa-unlock"></i> Unlock Invoice</button>
           </form>
