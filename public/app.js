@@ -881,7 +881,6 @@ window.copySharePassword = () => {
   input.select();
   input.setSelectionRange(0, 99999);
   navigator.clipboard.writeText(input.value);
-  alert("Invoice password copied to clipboard!");
 };
 
 window.copyShareUrl = () => {
@@ -889,7 +888,6 @@ window.copyShareUrl = () => {
   input.select();
   input.setSelectionRange(0, 99999);
   navigator.clipboard.writeText(input.value);
-  alert("Share link copied to clipboard!");
 };
 
 // View client view locally in app
