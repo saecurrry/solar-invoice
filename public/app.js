@@ -508,11 +508,11 @@ function renderDashboard() {
 
         return `
           <tr>
-            <td style="font-weight: 700; color: var(--accent);">${inv.id}</td>
+            <td style="font-weight: 700; color: var(--accent); white-space: nowrap;">${inv.id}</td>
             <td><strong>${escapeHTML(inv.clientName || 'N/A')}</strong><div style="font-size: 0.75rem; color: var(--text-muted);">${escapeHTML(inv.clientEmail)}</div></td>
             <td style="font-size: 0.85rem; color: var(--text-secondary); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${systemSpec}</td>
-            <td><strong>${formatZAR(total)}</strong></td>
-            <td style="font-size: 0.85rem;">${inv.date}</td>
+            <td style="white-space: nowrap;"><strong>${formatZAR(total)}</strong></td>
+            <td style="font-size: 0.85rem; white-space: nowrap;">${inv.date}</td>
             <td>
               <select onchange="updateInvoiceStatus('${inv.id}', this.value)" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; width: auto; background: none; border: 1px solid var(--border-color); color: inherit; border-radius: 4px;">
                 <option value="Draft" ${inv.status === 'Draft' ? 'selected' : ''}>Draft</option>
