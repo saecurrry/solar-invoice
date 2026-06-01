@@ -89,6 +89,15 @@ async function loadInitialState() {
 }
 
 // Create blank slate invoice
+function generateRandomPassword(length = 12) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
 function createNewInvoiceTemplate() {
   const date = new Date();
   const dateStr = date.toISOString().split('T')[0];
@@ -103,7 +112,8 @@ function createNewInvoiceTemplate() {
     date: dateStr,
     items: [], // Array of { code, name, category, costPrice, qty, markup, unit }
     globalMarkup: 20,
-    status: 'Draft'
+    status: 'Draft',
+    password: generateRandomPassword(12)
   };
 }
 
@@ -855,12 +865,26 @@ window.updateInvoiceStatus = (invoiceId, newStatus) => {
 
 // Generate encrypted shareable customer reference link
 window.generateShareLink = () => {
+  // Ensure the current invoice has a password, if not, generate one
+  if (!state.currentInvoice.password) {
+    state.currentInvoice.password = generateRandomPassword(12);
+  }
+
   const payload = compressInvoiceState(state.currentInvoice);
   const rootUrl = window.location.origin + window.location.pathname;
   const fullUrl = `${rootUrl}#/invoice?d=${payload}`;
   
   document.getElementById('share-url-input').value = fullUrl;
+  document.getElementById('share-password-input').value = state.currentInvoice.password;
   document.getElementById('share-card-container').style.display = 'block';
+};
+
+window.copySharePassword = () => {
+  const input = document.getElementById('share-password-input');
+  input.select();
+  input.setSelectionRange(0, 99999);
+  navigator.clipboard.writeText(input.value);
+  alert("Invoice password copied to clipboard!");
 };
 
 window.copyShareUrl = () => {
@@ -1281,6 +1305,27 @@ function renderClientInvoice(invoice) {
   adminShell.style.display = 'none';
   clientShell.style.display = 'block';
 
+  // Stash active client invoice for validation callback
+  window.activeClientInvoice = invoice;
+
+  // Intercept password protection for client-facing view
+  const isUnlocked = sessionStorage.getItem('client_unlocked_' + invoice.id) === 'true';
+  const lockEl = document.getElementById('client-login-lock');
+  
+  if (invoice.password && !isUnlocked) {
+    if (lockEl) {
+      lockEl.style.display = 'flex';
+      const pwInput = document.getElementById('client-lock-password');
+      if (pwInput) {
+        pwInput.value = '';
+        pwInput.focus();
+      }
+    }
+    return; // Stop rendering completely to protect contents from DOM inspectors!
+  }
+
+  if (lockEl) lockEl.style.display = 'none';
+
   // Toggle internal admin link helper if we have invoices in active session
   const adminBtn = document.getElementById('client-admin-button');
   if (adminBtn) {
@@ -1364,6 +1409,26 @@ function renderClientInvoice(invoice) {
 
 window.loadAdminFromClient = () => {
   window.location.hash = '#dashboard';
+};
+
+window.handleClientInvoiceUnlock = (e) => {
+  e.preventDefault();
+  const passwordInput = document.getElementById('client-lock-password');
+  const enteredPassword = passwordInput.value.trim();
+  const invoice = window.activeClientInvoice;
+  
+  if (invoice && enteredPassword === invoice.password) {
+    sessionStorage.setItem('client_unlocked_' + invoice.id, 'true');
+    const lockEl = document.getElementById('client-login-lock');
+    if (lockEl) lockEl.style.display = 'none';
+    
+    // Re-render full client invoice view now that we are authenticated
+    renderClientInvoice(invoice);
+  } else {
+    alert("Incorrect password. Access denied. Please verify the credentials provided by your installer.");
+    passwordInput.value = '';
+    passwordInput.focus();
+  }
 };
 
 // --- 6. DRAG AND DROP CSV IMPORTER ENGINE ---
