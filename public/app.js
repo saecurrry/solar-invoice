@@ -995,6 +995,31 @@ window.deleteBundle = (bundleId) => {
   }
 };
 
+window.updateBundleRowPrice = (element) => {
+  const row = element.closest('.form-row');
+  if (!row) return;
+  const input = row.querySelector('.bundle-item-search-input');
+  const qtyInput = row.querySelector('.bundle-item-qty');
+  const priceDisplay = row.querySelector('.bundle-row-price-display');
+  
+  if (!input || !priceDisplay) return;
+  
+  const typedVal = input.value.trim();
+  const matchedItem = state.catalog.find(item => {
+    const formattedStr = `[${item.code}] ${item.name} (R ${item.costPrice})`;
+    return formattedStr === typedVal;
+  });
+  
+  if (matchedItem) {
+    const qty = parseInt(qtyInput.value) || 1;
+    const clientPrice = matchedItem.costPrice * 1.2; // Estimate client price (+20% markup)
+    const total = clientPrice * qty;
+    priceDisplay.innerText = formatZAR(total);
+  } else {
+    priceDisplay.innerText = '-';
+  }
+};
+
 // Dynamic rows inside creation/editing bundle modal
 window.addBundleModalSelectorRow = (selectedId = '', qty = 1) => {
   const container = document.getElementById('bundle-modal-items-list');
@@ -1013,16 +1038,24 @@ window.addBundleModalSelectorRow = (selectedId = '', qty = 1) => {
   row.style.marginBottom = '0.5rem';
   row.innerHTML = `
     <div style="flex-grow: 1;">
-      <input type="text" class="bundle-item-search-input" list="bundle-catalog-datalist" placeholder="Type to search stock item..." value="${escapeHTML(selectedText)}" style="font-size: 0.85rem; padding: 0.5rem; width: 100%;">
+      <input type="text" class="bundle-item-search-input" list="bundle-catalog-datalist" placeholder="Type to search stock item..." value="${escapeHTML(selectedText)}" style="font-size: 0.85rem; padding: 0.5rem; width: 100%;" oninput="updateBundleRowPrice(this)" onchange="updateBundleRowPrice(this)">
+    </div>
+    <div style="width: 100px; text-align: right; padding-right: 0.5rem;">
+      <span class="bundle-row-price-display" style="font-size: 0.85rem; font-weight: 600; color: var(--accent);">-</span>
     </div>
     <div style="width: 80px;">
-      <input type="number" class="bundle-item-qty" value="${qty}" min="1" step="1" style="font-size: 0.85rem; padding: 0.5rem;">
+      <input type="number" class="bundle-item-qty" value="${qty}" min="1" step="1" style="font-size: 0.85rem; padding: 0.5rem;" oninput="updateBundleRowPrice(this)" onchange="updateBundleRowPrice(this)">
     </div>
     <div style="width: 40px; text-align: right;">
       <button class="btn btn-danger btn-sm" onclick="this.parentElement.parentElement.remove()" style="padding: 0.4rem;"><i class="fa-solid fa-trash"></i></button>
     </div>
   `;
   container.appendChild(row);
+
+  // Auto-initialize the row price on load
+  setTimeout(() => {
+    updateBundleRowPrice(row.querySelector('.bundle-item-search-input'));
+  }, 0);
 };
 
 window.submitNewBundle = () => {
