@@ -210,6 +210,8 @@ function handleHashRoute() {
       document.getElementById('admin-shell').style.display = 'flex';
       document.getElementById('client-shell').style.display = 'none';
     } else {
+      // Active admin session verified
+      sessionStorage.setItem('helios_admin_session', 'true');
       const adminShell = document.getElementById('admin-shell');
       const clientShell = document.getElementById('client-shell');
       
@@ -235,6 +237,9 @@ export function switchView(viewName, updateHash = true) {
     }
     return;
   }
+
+  // Active admin session verified
+  sessionStorage.setItem('helios_admin_session', 'true');
 
   state.activeView = viewName;
   
@@ -301,6 +306,7 @@ window.handleAdminLoginSubmit = (e) => {
   
   if (enteredPassword === state.settings.adminPassword) {
     sessionStorage.setItem('helios_admin_unlocked', 'true');
+    sessionStorage.setItem('helios_admin_session', 'true');
     const lockEl = document.getElementById('admin-login-lock');
     if (lockEl) lockEl.style.display = 'none';
     passwordInput.value = '';
@@ -316,6 +322,7 @@ window.handleAdminLoginSubmit = (e) => {
 
 window.adminLogout = () => {
   sessionStorage.removeItem('helios_admin_unlocked');
+  sessionStorage.removeItem('helios_admin_session');
   checkAdminLock();
   window.location.hash = '#dashboard';
 };
@@ -1337,10 +1344,11 @@ function renderClientInvoice(invoice) {
 
   if (lockEl) lockEl.style.display = 'none';
 
-  // Toggle internal admin link helper if we have invoices in active session
+  // Toggle internal admin link helper ONLY if this is a verified active admin session
   const adminBtn = document.getElementById('client-admin-button');
   if (adminBtn) {
-    adminBtn.style.display = 'block'; // Let user go back to their workspace easily
+    const isAdmin = sessionStorage.getItem('helios_admin_session') === 'true';
+    adminBtn.style.display = isAdmin ? 'block' : 'none';
   }
 
   // Bind settings details to client invoice
@@ -1790,6 +1798,7 @@ window.resetAdminPassword = async () => {
     
     // Set unlocked status in session
     sessionStorage.setItem('helios_admin_unlocked', 'true');
+    sessionStorage.setItem('helios_admin_session', 'true');
     
     alert("Admin password cleared successfully! The console is now unlocked.");
     handleHashRoute();
