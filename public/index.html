@@ -88,8 +88,8 @@
         <!-- DASHBOARD VIEW -->
         <main id="view-dashboard" class="content-container view-section active">
           <!-- Stats Grid -->
-          <!-- Financial Stats Grid -->
-          <section class="financial-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 1.5rem;">
+          <!-- Financial Stats Grid with Stacked counts column on the far right -->
+          <section class="financial-grid" style="display: grid; grid-template-columns: 3fr 3fr 3fr 2fr; gap: 1.5rem; margin-bottom: 1.5rem;">
             <div class="stat-card outstanding" style="border-left: 4px solid var(--accent);">
               <div class="stat-label" style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Outstanding Balance</div>
               <div class="stat-value currency" id="stat-outstanding" style="font-size: 2.2rem; font-weight: 700; color: var(--text-primary); margin-top: 0.5rem;">R 0.00</div>
@@ -104,6 +104,17 @@
               <div class="stat-label" style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Sent Amount</div>
               <div class="stat-value currency" id="stat-sent-amount" style="font-size: 2.2rem; font-weight: 700; color: var(--text-primary); margin-top: 0.5rem;">R 0.00</div>
               <div class="stat-desc" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Active quotes awaiting payment</div>
+            </div>
+            <div class="stat-card outstanding-counts" style="border-left: 4px solid #64748b; display: flex; flex-direction: column; justify-content: center; gap: 0.5rem; padding: 1rem 1.25rem;">
+              <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 2px;">Outstanding Items</div>
+              <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.02); padding: 0.35rem 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                <span style="font-size: 0.8rem; font-weight: 500; color: var(--text-secondary); display: flex; align-items: center; gap: 0.35rem;"><i class="fa-solid fa-paper-plane" style="color: #3b82f6; font-size: 0.75rem;"></i> Sent</span>
+                <strong id="count-outstanding-sent" style="font-size: 1.1rem; color: var(--text-primary);">0</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.02); padding: 0.35rem 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                <span style="font-size: 0.8rem; font-weight: 500; color: var(--text-secondary); display: flex; align-items: center; gap: 0.35rem;"><i class="fa-solid fa-clock" style="color: var(--danger); font-size: 0.75rem;"></i> Late</span>
+                <strong id="count-outstanding-late" style="font-size: 1.1rem; color: var(--text-primary);">0</strong>
+              </div>
             </div>
           </section>
 
