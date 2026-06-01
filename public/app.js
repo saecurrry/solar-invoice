@@ -472,30 +472,43 @@ window.saveSettings = saveSettings;
 
 // --- 1. DASHBOARD VIEW RENDERING ---
 function renderDashboard() {
-  // Calculations: Running totals of outstanding vs paid
+  // Calculations: Running totals and counts by status
   let totalOutstanding = 0;
   let totalPaid = 0;
-  let activeSentCount = 0;
+  let totalSent = 0;
+
+  let sentCount = 0;
+  let paidCount = 0;
   let lateCount = 0;
+  let archivedCount = 0;
 
   state.invoices.forEach(inv => {
     const total = calculateInvoiceTotal(inv).total;
     if (inv.status === 'Sent') {
       totalOutstanding += total;
-      activeSentCount++;
+      totalSent += total;
+      sentCount++;
     } else if (inv.status === 'Late') {
       totalOutstanding += total;
       lateCount++;
     } else if (inv.status === 'Paid') {
       totalPaid += total;
+      paidCount++;
+    } else if (inv.status === 'Archived') {
+      archivedCount++;
     }
   });
 
-  // Update Counters
+  // Update Financial amount cards
   document.getElementById('stat-outstanding').innerText = formatZAR(totalOutstanding);
   document.getElementById('stat-paid').innerText = formatZAR(totalPaid);
-  document.getElementById('stat-sent-count').innerText = activeSentCount;
-  document.getElementById('stat-late-count').innerText = lateCount;
+  document.getElementById('stat-sent-amount').innerText = formatZAR(totalSent);
+
+  // Update Status count cards (on the right side of small card layouts)
+  document.getElementById('count-sent').innerText = sentCount;
+  document.getElementById('count-paid').innerText = paidCount;
+  document.getElementById('count-late').innerText = lateCount;
+  document.getElementById('count-archived').innerText = archivedCount;
 
   // Invoices list summary count
   document.getElementById('invoice-count-summary').innerText = `${state.invoices.length} Invoices Total`;

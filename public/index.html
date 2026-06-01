@@ -82,26 +82,42 @@
         <!-- DASHBOARD VIEW -->
         <main id="view-dashboard" class="content-container view-section active">
           <!-- Stats Grid -->
-          <section class="stats-grid">
-            <div class="stat-card outstanding">
-              <div class="stat-label">Outstanding Revenue</div>
-              <div class="stat-value currency" id="stat-outstanding">R 0.00</div>
-              <div class="stat-desc">Total unpaid and late invoices</div>
+          <!-- Financial Stats Grid -->
+          <section class="financial-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 1.5rem;">
+            <div class="stat-card outstanding" style="border-left: 4px solid var(--accent);">
+              <div class="stat-label" style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Outstanding Balance</div>
+              <div class="stat-value currency" id="stat-outstanding" style="font-size: 2.2rem; font-weight: 700; color: var(--text-primary); margin-top: 0.5rem;">R 0.00</div>
+              <div class="stat-desc" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Sent + Overdue unpaid quotes</div>
             </div>
-            <div class="stat-card paid">
-              <div class="stat-label">Paid Invoices</div>
-              <div class="stat-value currency" id="stat-paid">R 0.00</div>
-              <div class="stat-desc">Completed income (all-time)</div>
+            <div class="stat-card paid" style="border-left: 4px solid var(--success);">
+              <div class="stat-label" style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Paid Revenue</div>
+              <div class="stat-value currency" id="stat-paid" style="font-size: 2.2rem; font-weight: 700; color: var(--text-primary); margin-top: 0.5rem;">R 0.00</div>
+              <div class="stat-desc" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Total completed income</div>
             </div>
-            <div class="stat-card sent">
-              <div class="stat-label">Active Sent</div>
-              <div class="stat-value" id="stat-sent-count">0</div>
-              <div class="stat-desc">Awaiting customer payment</div>
+            <div class="stat-card sent" style="border-left: 4px solid #3b82f6;">
+              <div class="stat-label" style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Sent Amount</div>
+              <div class="stat-value currency" id="stat-sent-amount" style="font-size: 2.2rem; font-weight: 700; color: var(--text-primary); margin-top: 0.5rem;">R 0.00</div>
+              <div class="stat-desc" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Active quotes awaiting payment</div>
             </div>
-            <div class="stat-card late">
-              <div class="stat-label">Late & Overdue</div>
-              <div class="stat-value" id="stat-late-count">0</div>
-              <div class="stat-desc">Urgent attention needed</div>
+          </section>
+
+          <!-- Status Counts Tracker Grid -->
+          <section class="status-counts-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; margin-bottom: 2.5rem;">
+            <div class="mini-stat-card sent" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.75rem 1.25rem; display: flex; justify-content: space-between; align-items: center; border-right: 3px solid #3b82f6; transition: var(--transition-fast);">
+              <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-paper-plane" style="color: #3b82f6;"></i> Sent</span>
+              <span id="count-sent" style="font-size: 1.4rem; font-weight: 700; color: var(--text-primary);">0</span>
+            </div>
+            <div class="mini-stat-card paid" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.75rem 1.25rem; display: flex; justify-content: space-between; align-items: center; border-right: 3px solid var(--success); transition: var(--transition-fast);">
+              <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-circle-check" style="color: var(--success);"></i> Paid</span>
+              <span id="count-paid" style="font-size: 1.4rem; font-weight: 700; color: var(--text-primary);">0</span>
+            </div>
+            <div class="mini-stat-card late" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.75rem 1.25rem; display: flex; justify-content: space-between; align-items: center; border-right: 3px solid var(--danger); transition: var(--transition-fast);">
+              <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-clock" style="color: var(--danger);"></i> Late</span>
+              <span id="count-late" style="font-size: 1.4rem; font-weight: 700; color: var(--text-primary);">0</span>
+            </div>
+            <div class="mini-stat-card archived" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.75rem 1.25rem; display: flex; justify-content: space-between; align-items: center; border-right: 3px solid var(--text-muted); transition: var(--transition-fast);">
+              <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-box-archive" style="color: var(--text-muted);"></i> Archived</span>
+              <span id="count-archived" style="font-size: 1.4rem; font-weight: 700; color: var(--text-muted);">0</span>
             </div>
           </section>
 
