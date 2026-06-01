@@ -41,8 +41,7 @@ function updateSidebarBranding() {
   
   if (brandTextEl) {
     const compName = settings.companyName || DEFAULT_SETTINGS.companyName;
-    const words = compName.toUpperCase().split(/\s+/);
-    brandTextEl.innerText = words[0] || 'HELIOS';
+    brandTextEl.innerText = compName.toUpperCase();
   }
   
   if (brandSubEl) {
