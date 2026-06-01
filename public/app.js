@@ -78,6 +78,13 @@ async function loadInitialState() {
       const serverSettings = await res.json();
       if (serverSettings && typeof serverSettings === 'object') {
         state.settings = { ...DEFAULT_SETTINGS, ...serverSettings };
+        
+        // Critical Sync Guard: If the server settings say no password is set,
+        // we must clear any local/legacy password to stay perfectly in sync.
+        if (serverSettings.passwordSet === false) {
+          state.settings.adminPassword = "";
+        }
+        
         localStorage.setItem('helios_settings', JSON.stringify(state.settings));
         console.log(`[Init] Successfully synchronized with backend settings.`);
         checkAdminLock();
