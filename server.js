@@ -88,12 +88,25 @@ app.post('/api/admin/verify', (req, res) => {
 
 // --- SAVE SETTINGS ENDPOINT ---
 app.post('/api/settings/save', (req, res) => {
-  const { settings } = req.body;
+  const { settings, currentPassword } = req.body;
   if (!settings || typeof settings !== 'object') {
     return res.status(400).json({ success: false, message: "Invalid settings format. Must be an object." });
   }
 
   try {
+    // Backend security check: if a password already exists, verify currentPassword matches it before saving
+    if (fs.existsSync(SETTINGS_PATH)) {
+      const data = fs.readFileSync(SETTINGS_PATH, 'utf-8');
+      const existingSettings = JSON.parse(data);
+      const masterPassword = existingSettings.adminPassword || "";
+      
+      if (masterPassword && masterPassword.trim() !== "") {
+        if (currentPassword !== masterPassword) {
+          return res.status(401).json({ success: false, message: "Unauthorized. Correct current admin password is required to modify settings." });
+        }
+      }
+    }
+
     fs.writeFileSync(SETTINGS_PATH, JSON.stringify(settings, null, 2));
     console.log(`[Settings] Saved settings to settings.json`);
     return res.json({ success: true, message: "Successfully saved settings." });

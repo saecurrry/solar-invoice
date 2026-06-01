@@ -27,9 +27,12 @@ let state = {
   settings: { ...DEFAULT_SETTINGS }
 };
 
+// Private session password tracking in module scope (highly secure, never exposed to global scope or local storage)
+let authenticatedAdminPassword = "";
+
 // --- INITIALIZATION ---
-document.addEventListener('DOMContentLoaded', () => {
-  loadInitialState();
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadInitialState();
   initAppRouting();
   setupUIEventListeners();
 });
@@ -206,8 +209,8 @@ function handleHashRoute() {
   } else {
     // Admin Views Routing
     if (checkAdminLock()) {
-      // Admin is locked: force displays of shells but block interaction using the glass overlay
-      document.getElementById('admin-shell').style.display = 'flex';
+      // Admin is locked: keep both shells completely hidden to prevent element inspection/bypass
+      document.getElementById('admin-shell').style.display = 'none';
       document.getElementById('client-shell').style.display = 'none';
     } else {
       // Active admin session verified
@@ -316,6 +319,7 @@ window.handleAdminLoginSubmit = async (e) => {
     if (res.ok && data.success) {
       sessionStorage.setItem('helios_admin_unlocked', 'true');
       sessionStorage.setItem('helios_admin_session', 'true');
+      authenticatedAdminPassword = enteredPassword; // Save the verified password in memory
       const lockEl = document.getElementById('admin-login-lock');
       if (lockEl) lockEl.style.display = 'none';
       passwordInput.value = '';
@@ -336,6 +340,7 @@ window.handleAdminLoginSubmit = async (e) => {
 window.adminLogout = () => {
   sessionStorage.removeItem('helios_admin_unlocked');
   sessionStorage.removeItem('helios_admin_session');
+  authenticatedAdminPassword = ""; // Clear password from memory
   checkAdminLock();
   window.location.hash = '#dashboard';
 };
@@ -437,7 +442,7 @@ function renderSettings() {
   document.getElementById('settings-admin-password').value = settings.adminPassword || '';
 }
 
-window.saveSettingsForm = () => {
+window.saveSettingsForm = async () => {
   const updatedSettings = {
     companyName: document.getElementById('settings-company-name').value.trim(),
     companyTagline: document.getElementById('settings-company-tagline').value.trim(),
@@ -459,11 +464,16 @@ window.saveSettingsForm = () => {
     return;
   }
 
-  saveSettings(updatedSettings);
-  checkAdminLock();
-  updateSidebarBranding();
-  alert("Settings saved successfully!");
-  renderAllViews();
+  const success = await saveSettings(updatedSettings);
+  if (success) {
+    authenticatedAdminPassword = updatedSettings.adminPassword; // Update in-memory credential to new password
+    checkAdminLock();
+    updateSidebarBranding();
+    alert("Settings saved successfully!");
+    renderAllViews();
+  } else {
+    alert("Failed to save settings. If you configured a password, please verify your session.");
+  }
 };
 
 async function saveSettings(updatedSettings) {
@@ -475,18 +485,25 @@ async function saveSettings(updatedSettings) {
       const res = await fetch('/api/settings/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ settings: updatedSettings })
+        body: JSON.stringify({ 
+          settings: updatedSettings,
+          currentPassword: authenticatedAdminPassword
+        })
       });
       if (!res.ok) {
         const data = await res.json();
         console.warn("[Save Settings] Backend save failed:", data.message);
+        return false;
       } else {
         console.log("[Save Settings] Persistent backend sync successful.");
+        return true;
       }
     } catch (err) {
       console.warn("[Save Settings] Failed to connect to server:", err);
+      return false;
     }
   }
+  return true;
 }
 window.saveSettings = saveSettings;
 
@@ -1796,25 +1813,6 @@ function escapeHTML(str) {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
-// Emergency Admin Console Password Reset Option
-window.resetAdminPassword = async () => {
-  if (confirm("Are you sure you want to reset the admin console password? This will clear password protection so you can access the dashboard immediately.")) {
-    state.settings.adminPassword = "";
-    localStorage.setItem('helios_settings', JSON.stringify(state.settings));
-    
-    // Save persistently to serversettings.json
-    await saveSettings(state.settings);
-    
-    // Hide lock screen
-    const lockEl = document.getElementById('admin-login-lock');
-    if (lockEl) lockEl.style.display = 'none';
-    
-    // Set unlocked status in session
-    sessionStorage.setItem('helios_admin_unlocked', 'true');
-    sessionStorage.setItem('helios_admin_session', 'true');
-    
-    alert("Admin password cleared successfully! The console is now unlocked.");
-    handleHashRoute();
-    renderAllViews();
-  }
-};
+// Note: Public password resets have been removed for security. 
+// If you get locked out of your admin console, simply open 'settings.json' in your project root 
+// and clear or modify the 'adminPassword' field, then refresh the page.

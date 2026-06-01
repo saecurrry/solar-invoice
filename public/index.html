@@ -26,11 +26,7 @@
           </div>
           <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; font-size: 1rem; padding: 0.75rem;"><i class="fa-solid fa-unlock"></i> Unlock Dashboard</button>
           
-          <div style="margin-top: 1rem; text-align: center;">
-            <button type="button" onclick="resetAdminPassword()" style="background: none; border: none; color: var(--text-muted); font-size: 0.75rem; text-decoration: underline; cursor: pointer; transition: var(--transition-fast);">
-              <i class="fa-solid fa-triangle-exclamation"></i> Emergency Password Reset
-            </button>
-          </div>
+
         </form>
       </div>
     </div>
@@ -92,17 +88,17 @@
           <section class="financial-grid" style="display: grid; grid-template-columns: 3fr 3fr 3fr 2.2fr; gap: 1.5rem; margin-bottom: 2.5rem;">
             <div class="stat-card outstanding" style="border-left: 4px solid var(--accent);">
               <div class="stat-label" style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Outstanding Balance</div>
-              <div class="stat-value currency" id="stat-outstanding" style="font-size: 2.2rem; font-weight: 700; color: var(--text-primary); margin-top: 0.5rem;">R 0.00</div>
+              <div class="stat-value currency" id="stat-outstanding" style="font-size: 1.7rem; font-weight: 700; color: var(--text-primary); margin-top: 0.5rem;">R 0.00</div>
               <div class="stat-desc" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Sent + Overdue unpaid quotes</div>
             </div>
             <div class="stat-card paid" style="border-left: 4px solid var(--success);">
               <div class="stat-label" style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Paid Revenue</div>
-              <div class="stat-value currency" id="stat-paid" style="font-size: 2.2rem; font-weight: 700; color: var(--text-primary); margin-top: 0.5rem;">R 0.00</div>
+              <div class="stat-value currency" id="stat-paid" style="font-size: 1.7rem; font-weight: 700; color: var(--text-primary); margin-top: 0.5rem;">R 0.00</div>
               <div class="stat-desc" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Total completed income</div>
             </div>
             <div class="stat-card sent" style="border-left: 4px solid #3b82f6;">
               <div class="stat-label" style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Sent Amount</div>
-              <div class="stat-value currency" id="stat-sent-amount" style="font-size: 2.2rem; font-weight: 700; color: var(--text-primary); margin-top: 0.5rem;">R 0.00</div>
+              <div class="stat-value currency" id="stat-sent-amount" style="font-size: 1.7rem; font-weight: 700; color: var(--text-primary); margin-top: 0.5rem;">R 0.00</div>
               <div class="stat-desc" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Active quotes awaiting payment</div>
             </div>
             <div class="stat-card status-counts-card" style="border-left: 4px solid #64748b; display: flex; flex-direction: column; justify-content: center; gap: 0.35rem; padding: 0.75rem 1rem;">
