@@ -937,10 +937,21 @@ window.loadBundleInBuilder = (bundleId) => {
   }
 };
 
+function refreshBundleDatalist() {
+  const datalist = document.getElementById('bundle-catalog-datalist');
+  if (datalist) {
+    datalist.innerHTML = state.catalog.map(item => {
+      return `<option value="[${item.code}] ${escapeHTML(item.name)} (R ${item.costPrice})"></option>`;
+    }).join('');
+  }
+}
+
 // Edit bundle trigger
 window.editBundle = (bundleId) => {
   const bundle = state.bundles.find(b => b.id === bundleId);
   if (bundle) {
+    refreshBundleDatalist();
+    
     document.getElementById('bundle-modal-name').value = bundle.name;
     document.getElementById('bundle-modal-desc').value = bundle.description || '';
     
@@ -969,11 +980,14 @@ window.deleteBundle = (bundleId) => {
 // Dynamic rows inside creation/editing bundle modal
 window.addBundleModalSelectorRow = (selectedId = '', qty = 1) => {
   const container = document.getElementById('bundle-modal-items-list');
-  const index = container.children.length;
   
-  const options = state.catalog.map(item => {
-    return `<option value="${item.id}" ${item.id === selectedId ? 'selected' : ''}>[${item.category}] ${escapeHTML(item.name)} (R ${item.costPrice})</option>`;
-  }).join('');
+  let selectedText = '';
+  if (selectedId) {
+    const item = state.catalog.find(c => c.id === selectedId);
+    if (item) {
+      selectedText = `[${item.code}] ${item.name} (R ${item.costPrice})`;
+    }
+  }
 
   const row = document.createElement('div');
   row.className = 'form-row';
@@ -981,10 +995,7 @@ window.addBundleModalSelectorRow = (selectedId = '', qty = 1) => {
   row.style.marginBottom = '0.5rem';
   row.innerHTML = `
     <div style="flex-grow: 1;">
-      <select class="bundle-item-select" style="font-size: 0.85rem;">
-        <option value="">-- Choose Equipment --</option>
-        ${options}
-      </select>
+      <input type="text" class="bundle-item-search-input" list="bundle-catalog-datalist" placeholder="Type to search stock item..." value="${escapeHTML(selectedText)}" style="font-size: 0.85rem; padding: 0.5rem; width: 100%;">
     </div>
     <div style="width: 80px;">
       <input type="number" class="bundle-item-qty" value="${qty}" min="1" step="1" style="font-size: 0.85rem; padding: 0.5rem;">
@@ -1008,17 +1019,34 @@ window.submitNewBundle = () => {
   // Get items
   const items = [];
   const rows = document.querySelectorAll('#bundle-modal-items-list .form-row');
+  let hasInvalidItem = false;
+
   rows.forEach(row => {
-    const select = row.querySelector('.bundle-item-select');
+    const input = row.querySelector('.bundle-item-search-input');
     const qtyInput = row.querySelector('.bundle-item-qty');
     
-    if (select.value) {
-      items.push({
-        id: select.value,
-        qty: parseInt(qtyInput.value) || 1
+    if (input && input.value.trim()) {
+      const typedVal = input.value.trim();
+      const matchedItem = state.catalog.find(item => {
+        const formattedStr = `[${item.code}] ${item.name} (R ${item.costPrice})`;
+        return formattedStr === typedVal;
       });
+      
+      if (matchedItem) {
+        items.push({
+          id: matchedItem.id,
+          qty: parseInt(qtyInput.value) || 1
+        });
+      } else {
+        hasInvalidItem = true;
+      }
     }
   });
+
+  if (hasInvalidItem) {
+    alert("One or more items in the bundle do not match any products in the catalog. Please select a valid option from the search dropdown.");
+    return;
+  }
 
   if (items.length === 0) {
     alert("Please add at least one component to the bundle.");
@@ -1053,6 +1081,8 @@ window.submitNewBundle = () => {
 };
 
 window.openBundleModal = () => {
+  refreshBundleDatalist();
+  
   document.getElementById('bundle-modal-name').value = '';
   document.getElementById('bundle-modal-desc').value = '';
   document.getElementById('bundle-modal-items-list').innerHTML = '';
