@@ -1,0 +1,15 @@
+{
+  "name": "solar-invoice-app",
+  "version": "1.0.0",
+  "description": "Solar Invoice & Installation Bundler App with ZAR support and local distributor scraper",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "puppeteer": "^22.9.0"
+  },
+  "type": "module"
+}

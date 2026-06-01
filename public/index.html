@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Helios Solar Solutions - Invoice & Bundler</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- ================= DUAL SHELL SINGLE PAGE ROUTER ================= -->
+  <div id="app" style="width: 100%;">
+    
+    <!-- ====== ADMIN LOGIN LOCK SCREEN ====== -->
+    <div id="admin-login-lock" class="lock-screen-overlay" style="display: none;">
+      <div class="lock-card">
+        <div class="lock-logo"><i class="fa-solid fa-lock"></i></div>
+        <h2>Secure Access Required</h2>
+        <p>Enter the admin password to unlock the solar invoice workspace.</p>
+        
+        <form onsubmit="handleAdminLoginSubmit(event)" style="width: 100%;">
+          <div class="form-group" style="text-align: left; margin-bottom: 1.5rem;">
+            <label for="lock-password" style="color: var(--text-secondary); margin-bottom: 0.5rem;">Password</label>
+            <input type="password" id="lock-password" placeholder="••••••••" style="width: 100%; text-align: center; font-size: 1.1rem; letter-spacing: 2px;">
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; font-size: 1rem; padding: 0.75rem;"><i class="fa-solid fa-unlock"></i> Unlock Dashboard</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ====== ADMIN PANEL VIEW (Sidebar + Dashboard) ====== -->
+    <div id="admin-shell" style="display: flex; width: 100%;">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-logo"><i class="fa-solid fa-solar-panel"></i></div>
+          <div>
+            <span class="brand-text">HELIOS</span>
+            <span class="brand-sub">Solar Invoice App</span>
+          </div>
+        </div>
+
+        <nav>
+          <ul class="nav-links">
+            <li class="nav-item active" id="nav-dashboard" onclick="switchView('dashboard')">
+              <button><i class="fa-solid fa-chart-line"></i> Dashboard</button>
+            </li>
+            <li class="nav-item" id="nav-builder" onclick="switchView('builder')">
+              <button><i class="fa-solid fa-file-invoice-dollar"></i> Create Invoice</button>
+            </li>
+            <li class="nav-item" id="nav-bundles" onclick="switchView('bundles')">
+              <button><i class="fa-solid fa-cubes"></i> Solar Bundles</button>
+            </li>
+            <li class="nav-item" id="nav-catalog" onclick="switchView('catalog')">
+              <button><i class="fa-solid fa-list-check"></i> Stock Catalog</button>
+            </li>
+            <li class="nav-item" id="nav-settings" onclick="switchView('settings')">
+              <button><i class="fa-solid fa-gears"></i> App Settings</button>
+            </li>
+          </ul>
+        </nav>
+
+        <div class="sidebar-footer">
+          <p><i class="fa-solid fa-map-pin"></i> South Africa (ZAR)</p>
+          <p style="margin-top: 4px; font-size: 0.75rem;">Default Markup: 20%</p>
+          <button id="sidebar-logout-btn" class="btn btn-secondary btn-sm" style="width: 100%; margin-top: 0.75rem; display: none; padding: 0.35rem 0.5rem; font-size: 0.75rem;" onclick="adminLogout()"><i class="fa-solid fa-lock"></i> Lock Workspace</button>
+        </div>
+      </aside>
+
+      <!-- Main Layout -->
+      <div class="main-wrapper">
+        <header>
+          <div class="page-title">
+            <h1 id="header-title">Dashboard</h1>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-secondary" onclick="openScrapeModal()"><i class="fa-solid fa-rotate"></i> Sync GetOffGrid</button>
+            <button class="btn btn-primary" onclick="switchView('builder')"><i class="fa-solid fa-plus"></i> New Invoice</button>
+          </div>
+        </header>
+
+        <!-- DASHBOARD VIEW -->
+        <main id="view-dashboard" class="content-container view-section active">
+          <!-- Stats Grid -->
+          <section class="stats-grid">
+            <div class="stat-card outstanding">
+              <div class="stat-label">Outstanding Revenue</div>
+              <div class="stat-value currency" id="stat-outstanding">R 0.00</div>
+              <div class="stat-desc">Total unpaid and late invoices</div>
+            </div>
+            <div class="stat-card paid">
+              <div class="stat-label">Paid Invoices</div>
+              <div class="stat-value currency" id="stat-paid">R 0.00</div>
+              <div class="stat-desc">Completed income (all-time)</div>
+            </div>
+            <div class="stat-card sent">
+              <div class="stat-label">Active Sent</div>
+              <div class="stat-value" id="stat-sent-count">0</div>
+              <div class="stat-desc">Awaiting customer payment</div>
+            </div>
+            <div class="stat-card late">
+              <div class="stat-label">Late & Overdue</div>
+              <div class="stat-value" id="stat-late-count">0</div>
+              <div class="stat-desc">Urgent attention needed</div>
+            </div>
+          </section>
+
+          <!-- Main Dashboard Split Grid -->
+          <div class="dashboard-layout">
+            <!-- Left Panel: Recent Invoices -->
+            <div class="panel">
+              <div class="panel-header">
+                <h2><i class="fa-solid fa-list"></i> Tracked Invoices</h2>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);" id="invoice-count-summary">0 Invoices Total</div>
+              </div>
+              
+              <div class="table-responsive">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Ref ID</th>
+                      <th>Customer Name</th>
+                      <th>System Spec</th>
+                      <th>Amount (ZAR)</th>
+                      <th>Date</th>
+                      <th>Status</th>
+                      <th style="text-align: right;">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="invoice-table-body">
+                    <!-- Dynamic Rows -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Right Panel: Quick Start / Information -->
+            <div class="panel" style="height: fit-content;">
+              <div class="panel-header">
+                <h2><i class="fa-solid fa-bolt"></i> Quick Bundles</h2>
+              </div>
+              <div class="quick-list" id="dashboard-bundle-list">
+                <!-- Seeding Bundle shortcuts -->
+              </div>
+              <div style="margin-top: 1.5rem;">
+                <button class="btn btn-secondary" style="width: 100%;" onclick="switchView('bundles')">Manage Bundles</button>
+              </div>
+            </div>
+          </div>
+        </main>
+
+        <!-- INVOICE BUILDER VIEW -->
+        <main id="view-builder" class="content-container view-section">
+          <div class="builder-layout">
+            <!-- Left Side: Quote Configuration Form -->
+            <div class="panel">
+              <div class="panel-header">
+                <h2><i class="fa-solid fa-screwdriver-wrench"></i> Invoice Details & Options</h2>
+                <div style="display: flex; gap: 0.5rem;">
+                  <select id="builder-bundle-select" style="padding: 0.4rem 0.85rem; font-size: 0.8rem; width: 180px;">
+                    <option value="">-- Apply Bundle --</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Customer Info -->
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="client-name">Customer Name *</label>
+                  <input type="text" id="client-name" placeholder="e.g. John Doe">
+                </div>
+                <div class="form-group">
+                  <label for="client-email">Customer Email *</label>
+                  <input type="email" id="client-email" placeholder="e.g. john@example.com">
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="client-phone">Customer Phone</label>
+                  <input type="text" id="client-phone" placeholder="e.g. +27 82 123 4567">
+                </div>
+                <div class="form-group">
+                  <label for="client-address">Installation Address</label>
+                  <input type="text" id="client-address" placeholder="e.g. 123 Protea Road, Cape Town">
+                </div>
+              </div>
+
+              <!-- Itemization Header -->
+              <h3 style="font-size: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-top: 1.5rem; margin-bottom: 1rem;">
+                <i class="fa-solid fa-list-ol"></i> Itemized Installation Picklist
+              </h3>
+
+              <!-- Line Items Dynamic Wrapper -->
+              <div class="item-list-container">
+                <div id="invoice-items-list">
+                  <!-- Dynamic Rows appear here -->
+                </div>
+                
+                <!-- Add Manual Custom Row -->
+                <button class="btn btn-secondary btn-sm" onclick="addBlankInvoiceRow()" style="margin-top: 0.5rem;">
+                  <i class="fa-solid fa-plus"></i> Add Custom Item/Labor
+                </button>
+              </div>
+
+              <!-- Default markup validator settings -->
+              <div style="background-color: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1.25rem; margin-top: 1.5rem;">
+                <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 0.75rem;">Global Pricing Margin Control</h4>
+                <div class="markup-slider-container">
+                  <label for="global-markup" style="margin-bottom: 0; min-width: 140px;">Default Markup (%):</label>
+                  <input type="range" id="global-markup" min="0" max="100" value="20" step="1" oninput="updateGlobalMarkupLabel(this.value)">
+                  <span id="global-markup-val" style="font-weight: 700; width: 45px; text-align: right;">20%</span>
+                  <button class="btn btn-secondary btn-sm" onclick="applyGlobalMarkup()" style="padding: 0.35rem 0.75rem;">Recalculate All</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Side: Invoice Calculator & Share link panel -->
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+              <div class="panel">
+                <div class="panel-header">
+                  <h2><i class="fa-solid fa-calculator"></i> Pricing & Validation</h2>
+                </div>
+                
+                <div class="total-summary-card">
+                  <div class="summary-row">
+                    <span>Wholesale Cost Price</span>
+                    <span id="calc-wholesale-cost">R 0.00</span>
+                  </div>
+                  <div class="summary-row">
+                    <span>Total Markup</span>
+                    <span id="calc-markup-value">R 0.00</span>
+                  </div>
+                  <div class="summary-row profit">
+                    <span>Expected Profit (GP %)</span>
+                    <span id="calc-profit-percentage">0.00% (R 0.00)</span>
+                  </div>
+                  <div class="summary-row total">
+                    <span>Client Quote Total</span>
+                    <span id="calc-client-total">R 0.00</span>
+                  </div>
+                </div>
+
+                <!-- Invoice Status setting -->
+                <div class="form-group" style="margin-top: 1.5rem;">
+                  <label for="invoice-status-select">Current Status</label>
+                  <select id="invoice-status-select">
+                    <option value="Draft">Draft</option>
+                    <option value="Sent">Sent (Awaiting Payment)</option>
+                    <option value="Paid">Paid (Completed)</option>
+                    <option value="Late">Late (Overdue)</option>
+                  </select>
+                </div>
+
+                <!-- Primary Invoice Actions -->
+                <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1.5rem;">
+                  <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="saveInvoice()"><i class="fa-solid fa-save"></i> Save Invoice</button>
+                  <button class="btn btn-secondary" style="width: 100%; justify-content: center;" id="btn-generate-link" onclick="generateShareLink()" disabled><i class="fa-solid fa-link"></i> Generate Reference URL</button>
+                </div>
+
+                <!-- Generated URL Result Card -->
+                <div class="share-card" id="share-card-container" style="display: none;">
+                  <div style="font-size: 0.8rem; font-weight: 600; color: var(--accent);"><i class="fa-solid fa-check-circle"></i> Unique Share URL Generated:</div>
+                  <div class="share-url-container">
+                    <input type="text" id="share-url-input" class="share-url-input" readonly>
+                    <button class="btn btn-secondary btn-sm" onclick="copyShareUrl()"><i class="fa-solid fa-copy"></i> Copy</button>
+                  </div>
+                  <div style="font-size: 0.7rem; color: var(--text-secondary); line-height: 1.4;">
+                    Send this URL to the customer. When opened, it will render the official client-facing invoice immediately.
+                  </div>
+                </div>
+              </div>
+
+              <!-- Search/Add Catalog Quick Items Drawer -->
+              <div class="panel" style="flex-grow: 1;">
+                <div class="panel-header">
+                  <h2><i class="fa-solid fa-magnifying-glass"></i> Click to Add to Quote</h2>
+                </div>
+                <div class="form-group">
+                  <input type="text" id="builder-catalog-search" placeholder="Search catalog by name or brand..." oninput="filterBuilderCatalog(this.value)">
+                </div>
+                <div class="catalog-picker" id="builder-catalog-picker">
+                  <!-- Dynamic Catalog Picker Items -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+
+        <!-- SOLAR BUNDLES VIEW -->
+        <main id="view-bundles" class="content-container view-section">
+          <div class="panel" style="margin-bottom: 2rem;">
+            <div class="panel-header">
+              <h2><i class="fa-solid fa-boxes-packing"></i> Saved Bundles / Templates</h2>
+              <button class="btn btn-primary btn-sm" onclick="openBundleModal()"><i class="fa-solid fa-plus"></i> Create Custom Bundle</button>
+            </div>
+            
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Bundle Name</th>
+                    <th>Components Breakdown</th>
+                    <th>Average Cost (ZAR)</th>
+                    <th>Client Price (+20%)</th>
+                    <th style="text-align: right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="bundles-table-body">
+                  <!-- Dynamic Bundle Rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </main>
+
+        <!-- INVENTORY CATALOG VIEW -->
+        <main id="view-catalog" class="content-container view-section">
+          <!-- Catalog Panel Layout -->
+          <div class="builder-layout">
+            <!-- Left Side: Catalog Table -->
+            <div class="panel">
+              <div class="panel-header">
+                <h2><i class="fa-solid fa-warehouse"></i> Inventory Stock & Wholesale Prices</h2>
+                <div style="display: flex; gap: 0.75rem;">
+                  <button class="btn btn-secondary btn-sm" onclick="exportCatalogToCSV()"><i class="fa-solid fa-file-export"></i> Export CSV List</button>
+                  <button class="btn btn-secondary btn-sm" onclick="openImportModal()"><i class="fa-solid fa-file-csv"></i> Import CSV List</button>
+                  <button class="btn btn-danger btn-sm" onclick="purgeCatalog()"><i class="fa-solid fa-trash-can"></i> Purge Catalog</button>
+                  <button class="btn btn-primary btn-sm" onclick="openAddCatalogItemModal()"><i class="fa-solid fa-plus"></i> Add Item</button>
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 1.5rem;">
+                <input type="text" id="catalog-search" placeholder="Search inventory..." oninput="filterInventoryCatalog(this.value)">
+              </div>
+
+              <div class="table-responsive" style="max-height: 600px;">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Product Code</th>
+                      <th>Product Name</th>
+                      <th>Category</th>
+                      <th>Wholesale Cost</th>
+                      <th>Client Price (+20%)</th>
+                      <th style="text-align: right;">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="catalog-table-body">
+                    <!-- Dynamic Catalog Rows -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Right Side: Distributor Info & Scraping Log -->
+            <div class="panel" style="height: fit-content;">
+              <div class="panel-header">
+                <h2><i class="fa-solid fa-building-circle-check"></i> Distributor Sync Portal</h2>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                <div style="background-color: rgba(245, 158, 11, 0.05); border: 1px solid var(--border-hover); border-radius: var(--radius-sm); padding: 1rem;">
+                  <h4 style="color: var(--accent); font-size: 0.9rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-info-circle"></i> Connected Supplier: GetOffGrid.co.za</h4>
+                  <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4;">
+                    GetOffGrid wholesale rates are synced inside the app dynamically. Make sure your credentials are valid.
+                  </p>
+                </div>
+                
+                <div class="summary-row">
+                  <span>Current Distributor Items</span>
+                  <span id="distributor-items-count" style="font-weight: 700;">0</span>
+                </div>
+                <div class="summary-row">
+                  <span>Last Sync Date</span>
+                  <span id="distributor-last-sync" style="font-weight: 700;">Never</span>
+                </div>
+
+                <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="openScrapeModal()">
+                  <i class="fa-solid fa-arrows-rotate"></i> Sync Prices Directly
+                </button>
+              </div>
+            </div>
+          </div>
+        </main>
+
+        <!-- APP SETTINGS VIEW -->
+        <main id="view-settings" class="content-container view-section">
+          <div class="builder-layout">
+            <!-- Left Side: Profile Form -->
+            <div class="panel">
+              <div class="panel-header">
+                <h2><i class="fa-solid fa-building"></i> Company Profile & Contact Details</h2>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="settings-company-name">Company Name *</label>
+                  <input type="text" id="settings-company-name" placeholder="e.g. Helios Solar Solutions">
+                </div>
+                <div class="form-group">
+                  <label for="settings-company-tagline">Company Tagline / Subtitle</label>
+                  <input type="text" id="settings-company-tagline" placeholder="e.g. Powering South Africa's Future">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="settings-company-email">Company Email *</label>
+                  <input type="email" id="settings-company-email" placeholder="e.g. installs@heliossolar.co.za">
+                </div>
+                <div class="form-group">
+                  <label for="settings-company-phone">Company Phone *</label>
+                  <input type="text" id="settings-company-phone" placeholder="e.g. +27 (0) 11 456 7890">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="settings-company-address1">Street Address Line 1 *</label>
+                  <input type="text" id="settings-company-address1" placeholder="e.g. 12 Energy Hub Crescent">
+                </div>
+                <div class="form-group">
+                  <label for="settings-company-address2">Street Address Line 2</label>
+                  <input type="text" id="settings-company-address2" placeholder="e.g. Midrand, Gauteng, 1685">
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Side: Bank details & Admin Password -->
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+              <div class="panel">
+                <div class="panel-header">
+                  <h2><i class="fa-solid fa-building-columns"></i> Bank Account details</h2>
+                </div>
+                <div class="form-group">
+                  <label for="settings-bank-name">Bank Name</label>
+                  <input type="text" id="settings-bank-name" placeholder="e.g. First National Bank (FNB)">
+                </div>
+                <div class="form-group">
+                  <label for="settings-bank-accname">Account Name</label>
+                  <input type="text" id="settings-bank-accname" placeholder="e.g. Helios Solar Solutions (Pty) Ltd">
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="settings-bank-accnum">Account Number</label>
+                    <input type="text" id="settings-bank-accnum" placeholder="e.g. 62894107532">
+                  </div>
+                  <div class="form-group">
+                    <label for="settings-bank-branch">Branch Code</label>
+                    <input type="text" id="settings-bank-branch" placeholder="e.g. 250655">
+                  </div>
+                </div>
+              </div>
+
+              <div class="panel">
+                <div class="panel-header">
+                  <h2><i class="fa-solid fa-lock"></i> Admin Shell Security Password</h2>
+                </div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.4;">
+                  Secure access to wholesale pricing, tracking databases, and scraping settings. If empty, the app opens without authentication.
+                </div>
+                <div class="form-group">
+                  <label for="settings-admin-password">Secure Admin Password</label>
+                  <input type="password" id="settings-admin-password" placeholder="Leave empty to disable password protection">
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1.5rem;">
+                  <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="saveSettingsForm()"><i class="fa-solid fa-circle-check"></i> Save Profile & Password</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- ====== CLIENT-FACING INVOICE VIEW (Hidden from Admin Navigation) ====== -->
+    <div id="client-shell" style="display: none;" class="client-page-outer">
+      <div class="client-page-header">
+        <span style="color: var(--text-secondary); font-size: 0.85rem;"><i class="fa-solid fa-lock"></i> Secure Reference URL Invoice</span>
+        <div style="display: flex; gap: 0.75rem;">
+          <button class="btn btn-secondary btn-sm" onclick="window.print()"><i class="fa-solid fa-print"></i> Print / Save PDF</button>
+          <button class="btn btn-primary btn-sm" id="client-admin-button" onclick="loadAdminFromClient()" style="display: none;"><i class="fa-solid fa-gauge"></i> Go to Admin Dashboard</button>
+        </div>
+      </div>
+
+      <div class="client-invoice-container">
+        <!-- Header -->
+        <div class="invoice-header-grid">
+          <div>
+            <div class="invoice-logo" id="client-view-invoice-logo">HELIOS <span>SOLAR SOLUTIONS</span></div>
+            <div style="font-size: 0.8rem; color: #6b7280; margin-top: 4px; letter-spacing: 0.5px;" id="client-view-invoice-tagline">POWERING SOUTH AFRICA'S FUTURE</div>
+          </div>
+          <div class="invoice-details-block">
+            <h2>INVOICE</h2>
+            <p><strong>Invoice Ref:</strong> <span id="client-view-ref">INV-2026-001</span></p>
+            <p><strong>Date:</strong> <span id="client-view-date">21 May 2026</span></p>
+          </div>
+        </div>
+
+        <!-- Address Grid -->
+        <div class="invoice-addresses">
+          <div>
+            <div class="address-label">PREPARED BY:</div>
+            <div class="address-title" id="client-view-prepared-name">Helios Solar Solutions (Pty) Ltd</div>
+            <p id="client-view-prepared-address1">12 Energy Hub Crescent</p>
+            <p id="client-view-prepared-address2">Midrand, Gauteng, 1685</p>
+            <p>Phone: <span id="client-view-prepared-phone">+27 (0) 11 456 7890</span></p>
+            <p>Email: <span id="client-view-prepared-email">installs@heliossolar.co.za</span></p>
+          </div>
+          <div>
+            <div class="address-label">PREPARED FOR:</div>
+            <div class="address-title" id="client-view-customer-name">John Doe</div>
+            <p id="client-view-customer-email">john@example.com</p>
+            <p id="client-view-customer-phone">+27 82 123 4567</p>
+            <p id="client-view-customer-address">123 Protea Road, Newlands, Cape Town</p>
+          </div>
+        </div>
+
+        <!-- Product Table -->
+        <table class="client-invoice-table">
+          <thead>
+            <tr>
+              <th style="width: 55%;">Equipment / Option Details</th>
+              <th style="text-align: right; width: 10%;">Qty</th>
+              <th style="text-align: right; width: 15%;">Unit Price</th>
+              <th style="text-align: right; width: 20%;">Total (ZAR)</th>
+            </tr>
+          </thead>
+          <tbody id="client-view-items-tbody">
+            <!-- Dynamic Client Items -->
+          </tbody>
+        </table>
+
+        <!-- Pricing Summary -->
+        <div class="client-summary-box">
+          <table class="client-summary-table">
+            <tr>
+              <td>Subtotal</td>
+              <td id="client-view-subtotal">R 0.00</td>
+            </tr>
+            <tr>
+              <td>VAT (15%)</td>
+              <td id="client-view-vat">R 0.00</td>
+            </tr>
+            <tr class="total-row">
+              <td>Total Owed (ZAR)</td>
+              <td id="client-view-total">R 0.00</td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- Bank details / footer -->
+        <div class="bank-details-box">
+          <div class="bank-title"><i class="fa-solid fa-building-columns"></i> Payment Instructions (EFT Only)</div>
+          <p>Please use your invoice reference as the payment reference. Send POP to <span id="client-view-bank-pop">POP@heliossolar.co.za</span></p>
+          <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.8rem;">
+            <div><strong>Bank:</strong> <span id="client-view-bank-name">First National Bank (FNB)</span></div>
+            <div><strong>Account Name:</strong> <span id="client-view-bank-accname">Helios Solar Solutions (Pty) Ltd</span></div>
+            <div><strong>Account Number:</strong> <span id="client-view-bank-accnum">62894107532</span></div>
+            <div><strong>Branch Code:</strong> <span id="client-view-bank-branch">250655</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= DIALOG MODALS ================= -->
+  
+  <!-- GETOFFGRID SYNC MODAL -->
+  <div class="modal-overlay" id="modal-scrape">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title"><i class="fa-solid fa-lock"></i> Sync Trade Prices from GetOffGrid</span>
+        <button class="close-modal" onclick="closeModal('scrape')">&times;</button>
+      </div>
+      <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.5;">
+        This connects locally to your dealer portal account at <a href="https://www.getoffgrid.co.za" target="_blank" style="color: var(--accent);">GetOffGrid.co.za</a> via Puppeteer to scrape the latest dealer trade lists.
+      </div>
+      <div class="form-group">
+        <label for="gog-username">Portal Username / Email</label>
+        <input type="text" id="gog-username" placeholder="dealer@email.com">
+      </div>
+      <div class="form-group">
+        <label for="gog-password">Portal Password</label>
+        <input type="password" id="gog-password" placeholder="••••••••••••">
+      </div>
+      <div id="scrape-status-message" style="display: none; padding: 1rem; border-radius: var(--radius-sm); font-size: 0.8rem; line-height: 1.5; margin-top: 1rem;">
+        <!-- Status indicator -->
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeModal('scrape')">Cancel</button>
+        <button class="btn btn-primary" id="btn-do-scrape" onclick="triggerScraper()"><i class="fa-solid fa-plug"></i> Connect & Sync</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CSV IMPORT MODAL -->
+  <div class="modal-overlay" id="modal-import">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title"><i class="fa-solid fa-file-csv"></i> Drag-and-Drop Price List CSV</span>
+        <button class="close-modal" onclick="closeModal('import')">&times;</button>
+      </div>
+      <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+        Import your CSV product list directly. Ensure the CSV contains columns for <strong>Product Code, Product Name, Category,</strong> and <strong>Cost Price (ZAR)</strong>.
+      </div>
+      <div class="drag-drop-zone" id="csv-drag-zone">
+        <div class="drag-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+        <p style="font-weight: 600; margin-bottom: 0.25rem;">Click to browse or drag & drop CSV file</p>
+        <p style="font-size: 0.75rem; color: var(--text-muted);">Only .csv files supported</p>
+        <input type="file" id="csv-file-input" style="display: none;" accept=".csv">
+      </div>
+      <div id="import-mapping-container" style="display: none; margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+        <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 0.75rem;">Map CSV Columns</h4>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="csv-col-code">Product Code *</label>
+            <select id="csv-col-code"></select>
+          </div>
+          <div class="form-group">
+            <label for="csv-col-name">Product Name *</label>
+            <select id="csv-col-name"></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="csv-col-cost">Cost Price (ZAR) *</label>
+            <select id="csv-col-cost"></select>
+          </div>
+          <div class="form-group">
+            <label for="csv-col-category">Category</label>
+            <select id="csv-col-category"></select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeModal('import')">Cancel</button>
+        <button class="btn btn-primary" id="btn-do-import" onclick="processCSVImport()" disabled>Import Catalog</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD CUSTOM ITEM MODAL -->
+  <div class="modal-overlay" id="modal-add-item">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title"><i class="fa-solid fa-plus"></i> Add Catalog Product</span>
+        <button class="close-modal" onclick="closeModal('add-item')">&times;</button>
+      </div>
+      <div class="form-group">
+        <label for="cat-name">Product Name *</label>
+        <input type="text" id="cat-name" placeholder="e.g. Hubble AM-4 2.5kWh">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="cat-code">Product Code / SKU *</label>
+          <input type="text" id="cat-code" placeholder="e.g. HUB-AM4">
+        </div>
+        <div class="form-group">
+          <label for="cat-brand">Brand</label>
+          <input type="text" id="cat-brand" placeholder="e.g. Hubble">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="cat-category">Category *</label>
+          <select id="cat-category">
+            <!-- Filled dynamically -->
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="cat-cost">Wholesale Cost (ZAR) *</label>
+          <input type="number" id="cat-cost" placeholder="e.g. 15400" min="0" step="0.01">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="cat-unit">Unit</label>
+          <input type="text" id="cat-unit" placeholder="e.g. Unit, Meter, Set" value="Unit">
+        </div>
+        <div class="form-group">
+          <label for="cat-description">Specs / Details</label>
+          <input type="text" id="cat-description" placeholder="Short description of technical specs">
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeModal('add-item')">Cancel</button>
+        <button class="btn btn-primary" onclick="submitNewCatalogItem()">Save to Catalog</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD BUNDLE MODAL -->
+  <div class="modal-overlay" id="modal-bundle">
+    <div class="modal" style="max-width: 650px;">
+      <div class="modal-header">
+        <span class="modal-title"><i class="fa-solid fa-cubes"></i> Create Solar Bundle Template</span>
+        <button class="close-modal" onclick="closeModal('bundle')">&times;</button>
+      </div>
+      <div class="form-group">
+        <label for="bundle-modal-name">Bundle Name *</label>
+        <input type="text" id="bundle-modal-name" placeholder="e.g. Premium 5kW Estate Starter Package">
+      </div>
+      <div class="form-group">
+        <label for="bundle-modal-desc">Description</label>
+        <textarea id="bundle-modal-desc" rows="2" placeholder="Describe what this package is best suited for..."></textarea>
+      </div>
+
+      <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem; margin-top: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+        Add Bundle Core Items
+      </div>
+
+      <!-- Scrollable bundle item mapping -->
+      <div style="max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem;" id="bundle-modal-items-list">
+        <!-- Rows containing selector + quantity -->
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="addBundleModalSelectorRow()" style="margin-top: 0.5rem;">
+        <i class="fa-solid fa-plus"></i> Add Item to Bundle
+      </button>
+
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeModal('bundle')">Cancel</button>
+        <button class="btn btn-primary" onclick="submitNewBundle()">Create Bundle</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>

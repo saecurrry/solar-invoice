@@ -1,0 +1,12 @@
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+Thumbs.db
+
+# App debug captures and sync logs
+public/debug_*.png
+public/debug_*.txt
+public/catalog.json
+public/settings.json
