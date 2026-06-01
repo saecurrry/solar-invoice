@@ -509,15 +509,11 @@ function renderDashboard() {
       tbody.innerHTML = state.invoices.map(inv => {
         const total = calculateInvoiceTotal(inv).total;
         const systemSpec = getInvoiceSystemSummary(inv);
-        
-        let statusBadge = '';
-        if (inv.status === 'Draft') statusBadge = '<span class="badge badge-draft">Draft</span>';
-        else if (inv.status === 'Sent') statusBadge = '<span class="badge badge-sent">Sent</span>';
-        else if (inv.status === 'Paid') statusBadge = '<span class="badge badge-paid">Paid</span>';
-        else if (inv.status === 'Late') statusBadge = '<span class="badge badge-late">Late</span>';
+        const isArchived = inv.status === 'Archived';
+        const rowStyle = isArchived ? 'style="opacity: 0.45; filter: grayscale(50%);"' : '';
 
         return `
-          <tr>
+          <tr ${rowStyle}>
             <td style="font-weight: 700; color: var(--accent); white-space: nowrap;">${inv.id}</td>
             <td><strong>${escapeHTML(inv.clientName || 'N/A')}</strong><div style="font-size: 0.75rem; color: var(--text-muted);">${escapeHTML(inv.clientEmail)}</div></td>
             <td style="font-size: 0.85rem; color: var(--text-secondary); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${systemSpec}</td>
@@ -529,6 +525,7 @@ function renderDashboard() {
                 <option value="Sent" ${inv.status === 'Sent' ? 'selected' : ''}>Sent</option>
                 <option value="Paid" ${inv.status === 'Paid' ? 'selected' : ''}>Paid</option>
                 <option value="Late" ${inv.status === 'Late' ? 'selected' : ''}>Late</option>
+                <option value="Archived" ${inv.status === 'Archived' ? 'selected' : ''}>Archived</option>
               </select>
             </td>
             <td style="text-align: right;">
