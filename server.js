@@ -17,7 +17,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Path to store local synced catalog database
 const CATALOG_PATH = path.join(__dirname, 'public', 'catalog.json');
-const SETTINGS_PATH = path.join(__dirname, 'public', 'settings.json');
+const SETTINGS_PATH = path.join(__dirname, 'settings.json'); // Moved OUT of public folder to prevent cleartext downloads!
 
 // --- SAVE CATALOG ENDPOINT ---
 app.post('/api/catalog/save', (req, res) => {
@@ -36,6 +36,56 @@ app.post('/api/catalog/save', (req, res) => {
   }
 });
 
+// --- SECURE GET SETTINGS ENDPOINT ---
+app.get('/api/settings', (req, res) => {
+  try {
+    if (fs.existsSync(SETTINGS_PATH)) {
+      const data = fs.readFileSync(SETTINGS_PATH, 'utf-8');
+      const settings = JSON.parse(data);
+      
+      // Sanitize settings: remove cleartext password, add passwordSet flag
+      const sanitized = { ...settings };
+      sanitized.passwordSet = !!(settings.adminPassword && settings.adminPassword.trim() !== "");
+      delete sanitized.adminPassword;
+      
+      return res.json(sanitized);
+    } else {
+      return res.json({ passwordSet: false });
+    }
+  } catch (err) {
+    console.error("[Settings Fetch Error]", err);
+    return res.status(500).json({ success: false, message: "Failed to load settings." });
+  }
+});
+
+// --- SECURE VERIFY ADMIN PASSWORD ENDPOINT ---
+app.post('/api/admin/verify', (req, res) => {
+  const { password } = req.body;
+  try {
+    if (fs.existsSync(SETTINGS_PATH)) {
+      const data = fs.readFileSync(SETTINGS_PATH, 'utf-8');
+      const settings = JSON.parse(data);
+      const masterPassword = settings.adminPassword || "";
+      
+      if (password === masterPassword) {
+        return res.json({ success: true });
+      } else {
+        return res.json({ success: false, message: "Incorrect password. Access denied." });
+      }
+    } else {
+      // No settings file exists: treat empty password as unlocked
+      if (!password) {
+        return res.json({ success: true });
+      } else {
+        return res.json({ success: false, message: "No password configured." });
+      }
+    }
+  } catch (err) {
+    console.error("[Admin Verify Error]", err);
+    return res.status(500).json({ success: false, message: "Server error during verification." });
+  }
+});
+
 // --- SAVE SETTINGS ENDPOINT ---
 app.post('/api/settings/save', (req, res) => {
   const { settings } = req.body;
@@ -45,7 +95,7 @@ app.post('/api/settings/save', (req, res) => {
 
   try {
     fs.writeFileSync(SETTINGS_PATH, JSON.stringify(settings, null, 2));
-    console.log(`[Settings] Saved settings to public/settings.json`);
+    console.log(`[Settings] Saved settings to settings.json`);
     return res.json({ success: true, message: "Successfully saved settings." });
   } catch (err) {
     console.error("[Settings Save Error]", err);

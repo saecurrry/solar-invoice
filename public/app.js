@@ -70,13 +70,13 @@ async function loadInitialState() {
   }
 
   try {
-    const res = await fetch('/settings.json');
+    const res = await fetch('/api/settings');
     if (res.ok) {
       const serverSettings = await res.json();
       if (serverSettings && typeof serverSettings === 'object') {
         state.settings = { ...DEFAULT_SETTINGS, ...serverSettings };
         localStorage.setItem('helios_settings', JSON.stringify(state.settings));
-        console.log(`[Init] Successfully synchronized with backend settings.json.`);
+        console.log(`[Init] Successfully synchronized with backend settings.`);
         checkAdminLock();
         updateSidebarBranding();
       }
@@ -277,7 +277,7 @@ window.switchView = switchView;
 
 // --- SECURITY & LOCK SCREEN CONTROLLER ---
 window.checkAdminLock = () => {
-  const passwordSet = state.settings && state.settings.adminPassword && state.settings.adminPassword.trim() !== "";
+  const passwordSet = state.settings && (state.settings.passwordSet || (state.settings.adminPassword && state.settings.adminPassword.trim() !== ""));
   const isUnlocked = sessionStorage.getItem('helios_admin_unlocked') === 'true';
   const lockEl = document.getElementById('admin-login-lock');
   const logoutBtn = document.getElementById('sidebar-logout-btn');
@@ -299,24 +299,37 @@ window.checkAdminLock = () => {
   }
 };
 
-window.handleAdminLoginSubmit = (e) => {
+window.handleAdminLoginSubmit = async (e) => {
   e.preventDefault();
   const passwordInput = document.getElementById('lock-password');
   const enteredPassword = passwordInput.value;
   
-  if (enteredPassword === state.settings.adminPassword) {
-    sessionStorage.setItem('helios_admin_unlocked', 'true');
-    sessionStorage.setItem('helios_admin_session', 'true');
-    const lockEl = document.getElementById('admin-login-lock');
-    if (lockEl) lockEl.style.display = 'none';
-    passwordInput.value = '';
+  try {
+    const res = await fetch('/api/admin/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: enteredPassword })
+    });
     
-    handleHashRoute();
-    renderAllViews();
-  } else {
-    alert("Incorrect password. Access denied.");
-    passwordInput.value = '';
-    passwordInput.focus();
+    const data = await res.json();
+    
+    if (res.ok && data.success) {
+      sessionStorage.setItem('helios_admin_unlocked', 'true');
+      sessionStorage.setItem('helios_admin_session', 'true');
+      const lockEl = document.getElementById('admin-login-lock');
+      if (lockEl) lockEl.style.display = 'none';
+      passwordInput.value = '';
+      
+      handleHashRoute();
+      renderAllViews();
+    } else {
+      alert(data.message || "Incorrect password. Access denied.");
+      passwordInput.value = '';
+      passwordInput.focus();
+    }
+  } catch (err) {
+    console.error("Lock submission verify error:", err);
+    alert("Failed to connect to verification server.");
   }
 };
 
