@@ -504,13 +504,7 @@ function renderDashboard() {
   document.getElementById('stat-paid').innerText = formatZAR(totalPaid);
   document.getElementById('stat-sent-amount').innerText = formatZAR(totalSent);
 
-  // Update Stacked Outstanding Counts column at the end of the financial row
-  const outSentEl = document.getElementById('count-outstanding-sent');
-  const outLateEl = document.getElementById('count-outstanding-late');
-  if (outSentEl) outSentEl.innerText = sentCount;
-  if (outLateEl) outLateEl.innerText = lateCount;
-
-  // Update Status count cards (on the right side of small card layouts)
+  // Update Status count cards (stacked vertically on the end of the financial row)
   document.getElementById('count-sent').innerText = sentCount;
   document.getElementById('count-paid').innerText = paidCount;
   document.getElementById('count-late').innerText = lateCount;

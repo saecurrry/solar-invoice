@@ -89,7 +89,7 @@
         <main id="view-dashboard" class="content-container view-section active">
           <!-- Stats Grid -->
           <!-- Financial Stats Grid with Stacked counts column on the far right -->
-          <section class="financial-grid" style="display: grid; grid-template-columns: 3fr 3fr 3fr 2fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+          <section class="financial-grid" style="display: grid; grid-template-columns: 3fr 3fr 3fr 2.2fr; gap: 1.5rem; margin-bottom: 2.5rem;">
             <div class="stat-card outstanding" style="border-left: 4px solid var(--accent);">
               <div class="stat-label" style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Outstanding Balance</div>
               <div class="stat-value currency" id="stat-outstanding" style="font-size: 2.2rem; font-weight: 700; color: var(--text-primary); margin-top: 0.5rem;">R 0.00</div>
@@ -105,36 +105,28 @@
               <div class="stat-value currency" id="stat-sent-amount" style="font-size: 2.2rem; font-weight: 700; color: var(--text-primary); margin-top: 0.5rem;">R 0.00</div>
               <div class="stat-desc" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Active quotes awaiting payment</div>
             </div>
-            <div class="stat-card outstanding-counts" style="border-left: 4px solid #64748b; display: flex; flex-direction: column; justify-content: center; gap: 0.5rem; padding: 1rem 1.25rem;">
-              <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 2px;">Outstanding Items</div>
-              <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.02); padding: 0.35rem 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
-                <span style="font-size: 0.8rem; font-weight: 500; color: var(--text-secondary); display: flex; align-items: center; gap: 0.35rem;"><i class="fa-solid fa-paper-plane" style="color: #3b82f6; font-size: 0.75rem;"></i> Sent</span>
-                <strong id="count-outstanding-sent" style="font-size: 1.1rem; color: var(--text-primary);">0</strong>
+            <div class="stat-card status-counts-card" style="border-left: 4px solid #64748b; display: flex; flex-direction: column; justify-content: center; gap: 0.35rem; padding: 0.75rem 1rem;">
+              <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 2px;">Invoice Counts</div>
+              
+              <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.02); padding: 0.25rem 0.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); line-height: 1;">
+                <span style="font-size: 0.75rem; font-weight: 500; color: var(--text-secondary); display: flex; align-items: center; gap: 0.35rem;"><i class="fa-solid fa-paper-plane" style="color: #3b82f6; font-size: 0.7rem;"></i> Sent</span>
+                <strong id="count-sent" style="font-size: 0.95rem; color: var(--text-primary);">0</strong>
               </div>
-              <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.02); padding: 0.35rem 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
-                <span style="font-size: 0.8rem; font-weight: 500; color: var(--text-secondary); display: flex; align-items: center; gap: 0.35rem;"><i class="fa-solid fa-clock" style="color: var(--danger); font-size: 0.75rem;"></i> Late</span>
-                <strong id="count-outstanding-late" style="font-size: 1.1rem; color: var(--text-primary);">0</strong>
+              
+              <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.02); padding: 0.25rem 0.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); line-height: 1;">
+                <span style="font-size: 0.75rem; font-weight: 500; color: var(--text-secondary); display: flex; align-items: center; gap: 0.35rem;"><i class="fa-solid fa-circle-check" style="color: var(--success); font-size: 0.7rem;"></i> Paid</span>
+                <strong id="count-paid" style="font-size: 0.95rem; color: var(--text-primary);">0</strong>
               </div>
-            </div>
-          </section>
 
-          <!-- Status Counts Tracker Grid -->
-          <section class="status-counts-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; margin-bottom: 2.5rem;">
-            <div class="mini-stat-card sent" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.75rem 1.25rem; display: flex; justify-content: space-between; align-items: center; border-right: 3px solid #3b82f6; transition: var(--transition-fast);">
-              <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-paper-plane" style="color: #3b82f6;"></i> Sent</span>
-              <span id="count-sent" style="font-size: 1.4rem; font-weight: 700; color: var(--text-primary);">0</span>
-            </div>
-            <div class="mini-stat-card paid" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.75rem 1.25rem; display: flex; justify-content: space-between; align-items: center; border-right: 3px solid var(--success); transition: var(--transition-fast);">
-              <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-circle-check" style="color: var(--success);"></i> Paid</span>
-              <span id="count-paid" style="font-size: 1.4rem; font-weight: 700; color: var(--text-primary);">0</span>
-            </div>
-            <div class="mini-stat-card late" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.75rem 1.25rem; display: flex; justify-content: space-between; align-items: center; border-right: 3px solid var(--danger); transition: var(--transition-fast);">
-              <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-clock" style="color: var(--danger);"></i> Late</span>
-              <span id="count-late" style="font-size: 1.4rem; font-weight: 700; color: var(--text-primary);">0</span>
-            </div>
-            <div class="mini-stat-card archived" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.75rem 1.25rem; display: flex; justify-content: space-between; align-items: center; border-right: 3px solid var(--text-muted); transition: var(--transition-fast);">
-              <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-box-archive" style="color: var(--text-muted);"></i> Archived</span>
-              <span id="count-archived" style="font-size: 1.4rem; font-weight: 700; color: var(--text-muted);">0</span>
+              <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.02); padding: 0.25rem 0.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); line-height: 1;">
+                <span style="font-size: 0.75rem; font-weight: 500; color: var(--text-secondary); display: flex; align-items: center; gap: 0.35rem;"><i class="fa-solid fa-clock" style="color: var(--danger); font-size: 0.7rem;"></i> Late</span>
+                <strong id="count-late" style="font-size: 0.95rem; color: var(--text-primary);">0</strong>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.02); padding: 0.25rem 0.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); line-height: 1;">
+                <span style="font-size: 0.75rem; font-weight: 500; color: var(--text-muted); display: flex; align-items: center; gap: 0.35rem;"><i class="fa-solid fa-box-archive" style="color: var(--text-muted); font-size: 0.7rem;"></i> Archived</span>
+                <strong id="count-archived" style="font-size: 0.95rem; color: var(--text-muted);">0</strong>
+              </div>
             </div>
           </section>
 
