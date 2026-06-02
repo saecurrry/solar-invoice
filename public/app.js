@@ -234,7 +234,9 @@ function handleHashRoute() {
       else if (hash === '#catalog') view = 'catalog';
       else if (hash === '#settings') view = 'settings';
       
-      switchView(view, false);
+      if (state.activeView !== view) {
+        switchView(view, false);
+      }
     }
   }
 }
